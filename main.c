@@ -7,8 +7,7 @@
 FILE* fpCsv;
 
 
-static void open_file_dialog(){
-
+static void open_file_dialog(GtkApplication *app, gpointer data){
 }
 
 void open_file(){
@@ -29,8 +28,8 @@ char* password_get_string(password_t* obj){
 }
 
 static void setup_listitem(GtkListItemFactory *factory, GtkListItem *list_item){
-    GtkWidget *label = gtk_label_new ("");
-    gtk_list_item_set_child (list_item, label);
+    GtkWidget *label = gtk_label_new("");
+    gtk_list_item_set_child(list_item, label);
 }
 
 
@@ -49,7 +48,8 @@ static void activate(GtkApplication *app, gpointer data){
     /*GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
     g_signal_connect(factory, "setup", setup_listitem, NULL);
     g_signal_connect(factory, "bind", bind_listitem, NULL);*/
-    GtkWidget *createPasswordButton = gtk_button_new_with_label("Create Password");
+    GtkWidget* createPasswordButton = gtk_button_new_with_label("Create Password");
+    g_signal_connect(createPasswordButton, "clicked", G_CALLBACK(open_file_dialog), NULL);
     GtkWidget *mainUIBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
     //GtkWidget* listView = gtk_list_view_new();
     //gtk_box_append(GTK_BOX(mainUIBox), headerBar);
@@ -64,9 +64,11 @@ int main(int argc, char **argv){
         printf("Couldn't initialize libsodium");
         exit(1);
     }
-    /*char hash[crypto_pwhash_STRBYTES];
+    char hash[crypto_pwhash_STRBYTES];
     create_hash_from_password("test", hash);
-    printf("hash : %s\n", hash);*/
+    printf("hash : %s\n", hash);
+    char encrypted_str[1000];
+    //encrypt_str("hello", encrypt_str, hash, 0);
     FILE* fptr;
     fptr = fopen("test.csv", "r");
     char line[1000][1000];
