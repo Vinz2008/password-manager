@@ -2,6 +2,7 @@
 #include <gtk/gtk.h>
 #include <sodium.h>
 #include "libs/csv.h"
+#include "libs/encryption.h"
 
 FILE* fpCsv;
 
@@ -59,6 +60,13 @@ static void activate(GtkApplication *app, gpointer data){
 }
 
 int main(int argc, char **argv){
+    if (sodium_init() < 0){
+        printf("Couldn't initialize libsodium");
+        exit(1);
+    }
+    /*char hash[crypto_pwhash_STRBYTES];
+    create_hash_from_password("test", hash);
+    printf("hash : %s\n", hash);*/
     FILE* fptr;
     fptr = fopen("test.csv", "r");
     char line[1000][1000];
