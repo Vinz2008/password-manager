@@ -1,5 +1,6 @@
 #include "csv.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 int is_space(unsigned char c) {
@@ -12,7 +13,7 @@ int is_term(unsigned char c) {
   return 0;
 }
 
-int getLineCSV(char lineParsed[1000][1000], FILE* fptr){
+int getLineCSV(char** lineParsed, FILE* fptr){
   char* tok;
   char line[1000];
   int i = 0;
@@ -21,6 +22,7 @@ int getLineCSV(char lineParsed[1000][1000], FILE* fptr){
     tok = strtok(line, ";");
     while (tok != NULL){
       printf("tok : %s\n", tok);
+      lineParsed[i] = malloc(1000 * sizeof(char));
       strcpy(lineParsed[i], tok);
       i++;
       tok = strtok(NULL, ";");
