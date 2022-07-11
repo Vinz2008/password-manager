@@ -4,10 +4,30 @@
 #include "libs/csv.h"
 #include "libs/encryption.h"
 
+typedef struct {
+char* name;
+char* login;
+char* password;
+char* url;
+} password_t;
+
+
+typedef struct {
+    password_t password;
+} passwordwidget_t;
+
+typedef struct {
+    password_t* passwordList;
+    size_t used;
+    size_t size;
+} PasswordList;
+
+
 char* filename;
 FILE* fpCsv;
 GtkWidget *window;
-
+GtkWidget* passwordDialogWindow;
+PasswordList passwordListStruct;
 
 static void open_file(char* filename){
     fpCsv = fopen(filename,"r+");
@@ -38,12 +58,57 @@ static void open_file_dialog(GtkApplication *app, gpointer data){
 }
 
 
-typedef struct {
-char* name;
-char* login;
-char* password;
-char* url;
-} password_t;
+void addPasswordToList(PasswordList* passwordlist, password_t password){
+    if (passwordlist->used == passwordlist->size){
+        passwordlist->size *=2;
+        passwordlist->passwordList = realloc(passwordlist->passwordList, passwordlist->size * sizeof(password_t));
+    }
+    passwordlist->passwordList[passwordlist->used++] = password;
+}
+
+
+
+
+static void add_password(char* name, char* login, char* password, char* url){
+    password_t Password;
+    Password.name = malloc(30 * sizeof(char));
+    Password.name = name;
+    Password.login = malloc(30 * sizeof(char));
+    Password.login = login;
+    Password.password = malloc(30 * sizeof(char));
+    Password.password = password;
+    Password.url = malloc(30 * sizeof(char));
+    Password.url = url;
+    addPasswordToList(&passwordListStruct, Password);
+}
+
+static void add_password_dialog(GtkWidget *widget, gpointer data){
+    passwordDialogWindow  = gtk_window_new();
+    gtk_window_set_title(GTK_WINDOW(passwordDialogWindow), "dialog");
+    gtk_window_set_default_size(GTK_WINDOW(passwordDialogWindow),355,200);
+    GtkWidget* passwordDialogBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 9);
+    GtkWidget* nameLabel = gtk_label_new("Name");
+    GtkWidget* nameInput = gtk_text_new();
+    gtk_widget_set_margin_start(nameInput, 5);
+    GtkWidget* loginLabel = gtk_label_new("Login");
+    GtkWidget* loginInput = gtk_text_new();
+    gtk_widget_set_margin_start(loginInput, 5);
+    GtkWidget* passwordLabel = gtk_label_new("Password");
+    GtkWidget* passwordInput = gtk_text_new();
+    gtk_widget_set_margin_start(passwordInput, 5);
+    GtkWidget* urlLabel = gtk_label_new("Url");
+    GtkWidget* urlInput = gtk_text_new();
+    gtk_box_append(GTK_BOX(passwordDialogBox), nameLabel);
+    gtk_box_append(GTK_BOX(passwordDialogBox), nameInput);
+    gtk_box_append(GTK_BOX(passwordDialogBox), loginLabel);
+    gtk_box_append(GTK_BOX(passwordDialogBox), loginInput);
+    gtk_box_append(GTK_BOX(passwordDialogBox), passwordLabel);
+    gtk_box_append(GTK_BOX(passwordDialogBox), passwordInput);
+    gtk_box_append(GTK_BOX(passwordDialogBox), urlLabel);
+    gtk_box_append(GTK_BOX(passwordDialogBox), urlInput);
+    gtk_window_set_child(GTK_WINDOW(passwordDialogWindow), passwordDialogBox);
+    gtk_window_present(GTK_WINDOW(passwordDialogWindow));
+}
 
 
 char* password_get_string(password_t* obj){
@@ -66,15 +131,15 @@ static void bind_listitem (GtkListItemFactory *factory, GtkListItem *list_item){
   gtk_label_set_label(GTK_LABEL (label),password_get_string(obj));
 }
 
-
-
-GtkWidget* create_widget_func(GObject* item, gpointer user_data){
-    
+void create_password_widget(GtkWidget* Box, password_t* password){
+    GtkWidget* PasswordName = gtk_label_new(password->name);
+    /*GtkWidget* boxPassword = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
+    gtk_box_append(GTK_BOX(Box), boxPassword);*/
+    gtk_box_append(GTK_BOX(Box), PasswordName);
 }
 
-
-GDestroyNotify freeListPassword(){
-
+void create_list_password_widget(GtkWidget* Box){
+    
 }
 
 
@@ -84,16 +149,16 @@ static void activate(GtkApplication *app, gpointer data){
     /*GtkListItemFactory *factory = gtk_signal_list_item_factory_new();
     g_signal_connect(factory, "setup", setup_listitem, NULL);
     g_signal_connect(factory, "bind", bind_listitem, NULL);*/
-    GListModel* model;
-    GtkWidget* listboxPasswords = gtk_list_box_new();
-    gtk_list_box_bind_model(GTK_LIST_BOX(listboxPasswords), model, create_widget_func, NULL, freeListPassword);
+    GtkWidget* listPasswordBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
+    create_list_password_widget(listPasswordBox);
     GtkWidget* separator_list_button = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
     GtkWidget* createPasswordButton = gtk_button_new_with_label("Create Password");
-    g_signal_connect(createPasswordButton, "clicked", G_CALLBACK(open_file_dialog), NULL);
+    g_signal_connect(createPasswordButton, "clicked", G_CALLBACK(add_password_dialog), NULL);
     GtkWidget *mainUIBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
     //GtkWidget* listView = gtk_list_view_new();
     //gtk_box_append(GTK_BOX(mainUIBox), headerBar);
     //gtk_box_append(GTK_BOX(mainUIBox), listView);
+    gtk_box_append(GTK_BOX(mainUIBox), listPasswordBox);
     gtk_box_append(GTK_BOX(mainUIBox), separator_list_button);
     gtk_box_append(GTK_BOX(mainUIBox), createPasswordButton);
     gtk_window_set_child(GTK_WINDOW(window), mainUIBox);
@@ -101,6 +166,9 @@ static void activate(GtkApplication *app, gpointer data){
 }
 
 int main(int argc, char **argv){
+    passwordListStruct.passwordList = malloc(100 * sizeof(password_t));
+    passwordListStruct.used = 0;
+    passwordListStruct.size = 1;
     if (sodium_init() < 0){
         printf("Couldn't initialize libsodium");
         exit(1);
