@@ -98,6 +98,7 @@ static void add_password_dialog(GtkWidget *widget, gpointer data){
     gtk_widget_set_margin_start(passwordInput, 5);
     GtkWidget* urlLabel = gtk_label_new("Url");
     GtkWidget* urlInput = gtk_text_new();
+    GtkWidget* addPasswordButton = gtk_button_new_with_label("Confirm");
     gtk_box_append(GTK_BOX(passwordDialogBox), nameLabel);
     gtk_box_append(GTK_BOX(passwordDialogBox), nameInput);
     gtk_box_append(GTK_BOX(passwordDialogBox), loginLabel);
@@ -106,6 +107,7 @@ static void add_password_dialog(GtkWidget *widget, gpointer data){
     gtk_box_append(GTK_BOX(passwordDialogBox), passwordInput);
     gtk_box_append(GTK_BOX(passwordDialogBox), urlLabel);
     gtk_box_append(GTK_BOX(passwordDialogBox), urlInput);
+    gtk_box_append(GTK_BOX(passwordDialogBox), addPasswordButton);
     gtk_window_set_child(GTK_WINDOW(passwordDialogWindow), passwordDialogBox);
     gtk_window_present(GTK_WINDOW(passwordDialogWindow));
 }
