@@ -28,12 +28,23 @@ FILE* fpCsv;
 GtkWidget *window;
 GtkWidget* passwordDialogWindow;
 PasswordList passwordListStruct;
+char** lineDescriptor;
+int lineDescriptorLength;
 
 static void open_file(char* filename){
     fpCsv = fopen(filename,"r+");
-    char** lineDescriptor;
     lineDescriptor = malloc(1000 * sizeof(char*));
-    getLineCSV(lineDescriptor, fpCsv);
+    lineDescriptorLength = getLineCSV(lineDescriptor, fpCsv);
+    fclose(fpCsv);
+}
+
+static void write_list_to_file(char* filename){
+    fpCsv = fopen(filename,"w");
+    char* str;
+    CSVToString(lineDescriptor, lineDescriptorLength, str);
+    fprintf(fpCsv, "%s\n", str); 
+    fclose(fpCsv);
+
 }
 
 
